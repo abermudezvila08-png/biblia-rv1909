@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#08060f">
+<title>Biblia Desplegable · RV1909</title>
+<style>
+:root{
+  --bg:#08060f;--black:#04030a;
+  --gold:#e8b923;--orange:#ff7a2e;--red:#ff3d5a;
+  --cyan:#00e5ff;--green:#39ff14;--purple:#b44aff;--magenta:#ff2d95;
+  --text:#f0ebe3;--muted:#9a948c;
+  --card:#12101c;--border:#2a2640;
+  --accent:var(--gold);--accent2:var(--purple);
+}
+body.theme-2{--accent:var(--cyan);--accent2:var(--green);--card:#0c1418;--border:#1a3038}
+body.theme-3{--accent:var(--magenta);--accent2:var(--orange);--card:#160e16;--border:#302030}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 50% at 15% -5%,rgba(180,74,255,.22),transparent 55%),
+  radial-gradient(ellipse 55% 40% at 95% 5%,rgba(57,255,20,.09),transparent 50%),
+  radial-gradient(ellipse 40% 30% at 50% 100%,rgba(232,185,35,.07),transparent);
+  pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(8,6,15,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:8px}
+.logo{display:flex;align-items:center;gap:7px;font-weight:700;font-size:.9rem;flex-shrink:0}
+.logo-i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:grid;place-items:center;font-size:.95rem;box-shadow:0 0 12px rgba(232,185,35,.25)}
+.logo span{color:var(--accent)}
+.search{flex:1;min-width:0;position:relative}
+.search input{width:100%;padding:8px 12px 8px 32px;border-radius:999px;border:1px solid var(--border);background:#0c0a14;color:var(--text);font-size:.82rem;outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,185,35,.15)}
+.search::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.btn-i{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer;flex-shrink:0;font-size:.9rem;transition:.15s}
+.btn-i:hover,.btn-i.on{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(232,185,35,.2)}
+.books{display:flex;gap:5px;padding:8px 10px;background:var(--black);border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:95;overflow-x:auto;scrollbar-width:none}
+.books::-webkit-scrollbar{display:none}
+.book-tab{flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(18,16,28,.8);color:var(--muted);font-size:.76rem;font-weight:700;cursor:pointer;transition:.15s}
+.book-tab.active{background:linear-gradient(135deg,rgba(180,74,255,.28),rgba(232,185,35,.14));border-color:var(--accent);color:var(--accent);box-shadow:0 0 14px rgba(232,185,35,.18)}
+.tabs{display:flex;gap:4px;padding:7px 10px;overflow-x:auto;background:var(--black);border-bottom:1px solid var(--border);position:sticky;top:102px;z-index:90;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:6px 12px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:.73rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.tab.active{background:rgba(232,185,35,.12);border-color:var(--accent);color:var(--accent)}
+main{position:relative;z-index:1;padding:12px;padding-bottom:110px;max-width:820px;margin:0 auto}
+.view{display:none}.view.active{display:block;animation:in .18s ease}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:11px;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.ct{font-size:.88rem;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px;justify-content:space-between}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);flex-shrink:0}
+.badge{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.02em}
+.b-p{background:rgba(180,74,255,.22);color:#d4a0ff}.b-s{background:rgba(0,229,255,.14);color:var(--cyan)}
+.b-t{background:rgba(232,185,35,.16);color:var(--gold)}.b-d{background:rgba(255,45,149,.16);color:var(--magenta)}.b-w{background:rgba(255,122,46,.16);color:var(--orange)}
+.b-ok{background:rgba(57,255,20,.16);color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:9px}
+.ic{background:linear-gradient(160deg,var(--card),#0e0c16);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;transition:.18s;min-height:94px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.ic:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 18px rgba(232,185,35,.12)}
+.ic.read::after{content:'✓';position:absolute;top:7px;right:9px;color:var(--green);font-size:.78rem;font-weight:800;text-shadow:0 0 6px rgba(57,255,20,.5)}
+.ic h3{font-size:.84rem;font-weight:700;margin-bottom:3px;padding-right:16px;color:var(--text)}
+.ic p{font-size:.67rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+.meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.visits{font-size:.62rem;color:var(--muted)}
+.hero{text-align:center;padding:16px 10px 10px}
+.hero h1{font-size:1.25rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+.hero p{font-size:.8rem;color:var(--muted)}
+.dash{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:12px}
+.dstat{background:linear-gradient(160deg,var(--card),#0e0c16);border:1px solid var(--border);border-radius:12px;padding:13px;text-align:center}
+.dstat .n{font-size:1.4rem;font-weight:800;color:var(--accent);line-height:1.1;text-shadow:0 0 12px rgba(232,185,35,.25)}
+.dstat .l{font-size:.64rem;color:var(--muted);text-transform:uppercase;margin-top:4px;letter-spacing:.03em}
+.bar-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.76rem}
+.bar-row .lab{width:72px;color:var(--muted);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-row .bar{flex:1;height:9px;background:#1a1828;border-radius:5px;overflow:hidden;border:1px solid var(--border)}
+.bar-row .fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:5px;box-shadow:0 0 8px rgba(232,185,35,.3)}
+.bar-row .cnt{width:28px;text-align:right;color:var(--accent);font-weight:700}
+.msg{padding:11px 13px;border-radius:11px;margin-bottom:11px;font-size:.8rem;border-left:4px solid var(--accent);background:linear-gradient(90deg,rgba(232,185,35,.1),rgba(180,74,255,.05));color:#f0d78c}
+.back{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:.76rem;font-weight:600;cursor:pointer;margin-bottom:9px}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+.block{border-left:3px solid var(--accent);margin:7px 0;background:linear-gradient(90deg,rgba(232,185,35,.06),transparent);border-radius:0 10px 10px 0;overflow:hidden}
+.block-h{padding:10px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.block-h:hover{background:rgba(232,185,35,.08)}
+.block-h h4{font-size:.84rem;color:var(--accent);font-weight:700}
+.chev{color:var(--muted);font-size:.85rem;transition:transform .2s}.block.open .chev{transform:rotate(90deg);color:var(--accent)}
+.block-body{display:none;padding:0 12px 12px;border-top:1px solid rgba(232,185,35,.12)}
+.block.open .block-body{display:block}
+.ref-btn{display:block;width:100%;text-align:left;padding:10px 12px;margin:5px 0;border-radius:10px;border:1px solid var(--border);background:linear-gradient(135deg,#0c0a14,#12101c);color:var(--cyan);font-size:.8rem;font-family:ui-monospace,monospace;cursor:pointer;transition:.15s}
+.ref-btn:hover{border-color:var(--cyan);background:rgba(0,229,255,.1);box-shadow:0 0 12px rgba(0,229,255,.12)}
+.ref-btn .lab{font-family:system-ui;font-size:.7rem;color:var(--muted);display:block;margin-bottom:3px;font-weight:600}
+.ref-btn.read{border-color:rgba(57,255,20,.4);box-shadow:inset 0 0 0 1px rgba(57,255,20,.15)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{padding:5px 12px;border-radius:999px;border:1px solid rgba(180,74,255,.35);background:rgba(180,74,255,.12);color:#d4a0ff;font-size:.72rem;font-weight:600;cursor:pointer}
+.chip:hover{background:rgba(180,74,255,.22);border-color:var(--purple)}
+.notes-box textarea{width:100%;min-height:88px;padding:12px;border-radius:11px;border:1px solid var(--border);background:#0c0a14;color:var(--text);font-size:.86rem;resize:vertical;outline:none;font-family:inherit}
+.notes-box textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,185,35,.12)}
+.notes-actions{display:flex;gap:7px;margin-top:8px}
+/* READER — colorful */
+#reader{position:fixed;inset:0;z-index:300;background:rgba(4,3,10,.82);display:none;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(4px)}
+#reader.open{display:flex}
+.rcard{background:linear-gradient(180deg,#16122a 0%,#100e1a 40%,#0c0a14 100%);border:1px solid rgba(232,185,35,.45);border-radius:18px 18px 12px 12px;width:100%;max-width:540px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 40px rgba(180,74,255,.12);animation:up .22s ease}
+@keyframes up{from{transform:translateY(32px);opacity:0}to{transform:translateY(0);opacity:1}}
+.rh{padding:14px 16px;background:linear-gradient(135deg,rgba(180,74,255,.28),rgba(232,185,35,.14));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid rgba(232,185,35,.25)}
+.rh h2{font-size:.98rem;color:var(--gold);font-weight:800;line-height:1.3;text-shadow:0 0 16px rgba(232,185,35,.3)}
+.rh .sub{font-size:.72rem;color:#c4b8a0;margin-top:3px}
+.rb{padding:16px;overflow-y:auto;flex:1;font-size:.95rem;line-height:1.75;background:linear-gradient(180deg,transparent,rgba(8,6,15,.3))}
+.rb .v{margin-bottom:11px;padding:4px 0}
+.rb .vn{color:var(--gold);font-weight:800;font-size:.78rem;margin-right:6px;vertical-align:super;text-shadow:0 0 8px rgba(232,185,35,.35)}
+.rb .txt{color:#f2ebe0}
+.rb .src{margin-top:14px;font-size:.72rem;color:var(--muted);border-top:1px solid rgba(232,185,35,.2);padding-top:10px}
+.rb .empty-hint{color:var(--muted);font-size:.88rem;line-height:1.55;padding:8px 0}
+.rf{padding:12px 16px;border-top:1px solid rgba(232,185,35,.2);display:flex;gap:8px;background:rgba(8,6,15,.5)}
+.btn{padding:11px 14px;border-radius:11px;border:none;font-weight:700;font-size:.84rem;cursor:pointer;flex:1;min-width:90px;transition:.15s}
+.btn-p{background:linear-gradient(135deg,var(--purple),var(--gold));color:#0a0810;box-shadow:0 4px 16px rgba(232,185,35,.25)}
+.btn-p:hover{filter:brightness(1.08)}
+.btn-s{background:rgba(18,16,28,.9);border:1px solid var(--border);color:var(--text)}
+.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+/* FAB + PANEL */
+#fab{position:fixed;bottom:18px;right:14px;z-index:200;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--gold));border:none;color:#0a0810;font-weight:800;font-size:.62rem;cursor:pointer;box-shadow:0 6px 22px rgba(232,185,35,.4),0 0 20px rgba(180,74,255,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+#panel{position:fixed;bottom:80px;right:12px;width:min(320px,calc(100vw - 24px));max-height:420px;background:linear-gradient(180deg,#16122a,#100e1a);border:1px solid rgba(232,185,35,.4);border-radius:16px;z-index:199;display:none;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.55),0 0 30px rgba(180,74,255,.12)}
+#panel.open{display:flex}
+.ph{padding:12px 14px;background:linear-gradient(135deg,rgba(180,74,255,.25),rgba(232,185,35,.12));display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(232,185,35,.2)}
+.ph h3{font-size:.86rem;color:var(--gold);font-weight:800}
+.pb{padding:14px;overflow-y:auto;font-size:.82rem;line-height:1.5;color:#c8c0b4}
+.pb strong{color:var(--gold)}
+.lang-row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
+.lang-btn{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:rgba(12,10,20,.8);color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s}
+.lang-btn.active{border-color:var(--gold);color:#0a0810;background:linear-gradient(135deg,var(--purple),var(--gold));box-shadow:0 0 14px rgba(232,185,35,.3)}
+.lang-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);background:linear-gradient(135deg,#16122a,#100e1a);border:1px solid var(--gold);color:var(--gold);padding:10px 16px;border-radius:10px;font-weight:700;font-size:.82rem;z-index:400;opacity:0;transition:.2s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:22px;color:var(--muted);font-size:.85rem}
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:.82rem;cursor:pointer}
+.list-item:last-child{border-bottom:none}
+.list-item:hover{color:var(--accent)}
+@media(max-width:480px){.grid{grid-template-columns:1fr 1fr}.tabs{top:98px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-i">✝</div><div>Biblia<span>·RV1909</span></div></div>
+  <div class="search"><input type="search" id="q" placeholder="..." autocomplete="off"></div>
+  <button class="btn-i" id="btn-dash" title="Dashboard">▣</button>
+  <button class="btn-i" id="btn-home" title="Home">⌂</button>
+</header>
+<div class="books" id="books">
+  <button class="book-tab active" data-book="1">I</button>
+  <button class="book-tab" data-book="2">II</button>
+  <button class="book-tab" data-book="3">III</button>
+</div>
+<nav class="tabs" id="tabs"></nav>
+<main>
+  <div id="view-home" class="view active">
+    <div class="hero">
+      <h1 id="hero-title">Libro I · Historias</h1>
+      <p id="hero-desc">Personajes y sucesos. Texto RV1909.</p>
+    </div>
+    <div class="dash">
+      <div class="dstat"><div class="n" id="ds-read">0</div><div class="l" data-i="read_passages">Pasajes leídos</div></div>
+      <div class="dstat"><div class="n" id="ds-fichas">0</div><div class="l" data-i="read_cards">Fichas visitadas</div></div>
+      <div class="dstat"><div class="n" id="ds-pct">0%</div><div class="l" data-i="progress">Progreso</div></div>
+      <div class="dstat"><div class="n" id="ds-notes">0</div><div class="l" data-i="notes">Notas</div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="most_read">Más leídos</span></span></div>
+      <div id="top-list"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="pending">Pendientes</span></span></div>
+      <div id="unread-list"></div>
+    </div>
+    <div class="msg" data-i="how">Abre ficha → bloque → referencia azul → lees RV1909. Todo se guarda en este dispositivo.</div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="sections">Secciones</span></span></div><div class="grid" id="g-sec"></div></div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="featured">Destacados</span></span></div><div class="grid" id="g-dest"></div></div>
+  </div>
+
+  <div id="view-list" class="view">
+    <button class="back" onclick="goHome()" data-i="back">← Volver</button>
+    <div class="ct" style="margin-bottom:8px"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span id="list-title">Lista</span></span></div>
+    <div class="grid" id="list-grid"></div>
+  </div>
+
+  <div id="view-detail" class="view">
+    <button class="back" id="d-back" data-i="back">← Volver</button>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+      <span class="badge" id="d-tipo"></span>
+      <span class="badge b-t" id="d-era"></span>
+      <span class="badge b-ok" id="d-read-badge" style="display:none">✓</span>
+    </div>
+    <h1 id="d-nom" style="font-size:1.22rem;font-weight:800;margin-bottom:5px"></h1>
+    <p id="d-res" style="font-size:.85rem;color:var(--muted);margin-bottom:11px;line-height:1.4"></p>
+    <div class="card">
+      <div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="passages">Pasajes RV1909</span></span></div>
+      <div id="d-blocks"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="my_notes">Mis notas</span></span></div>
+      <div class="notes-box">
+        <textarea id="note-area" placeholder="..."></textarea>
+        <div class="notes-actions">
+          <button class="btn btn-p" id="note-save" style="flex:1" data-i="save_note">Guardar nota</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="d-rel-w">
+      <div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="related">Relacionados</span></span></div>
+      <div class="chips" id="d-rel"></div>
+    </div>
+  </div>
+
+  <div id="view-search" class="view">
+    <button class="back" onclick="goHome()" data-i="back">← Volver</button>
+    <div class="ct" style="margin-bottom:8px"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="results">Resultados</span>: <span id="sq"></span></span></div>
+    <div class="grid" id="sg"></div>
+    <div id="se" class="empty" style="display:none" data-i="no_results">Sin coincidencias</div>
+  </div>
+
+  <div id="view-dash" class="view">
+    <button class="back" onclick="goHome()" data-i="back">← Volver</button>
+    <div class="ct" style="margin-bottom:10px"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="dashboard">Panel de lectura</span></span></div>
+    <div class="dash">
+      <div class="dstat"><div class="n" id="dd-read">0</div><div class="l" data-i="read_passages">Pasajes leídos</div></div>
+      <div class="dstat"><div class="n" id="dd-fichas">0</div><div class="l" data-i="read_cards">Fichas visitadas</div></div>
+      <div class="dstat"><div class="n" id="dd-pct">0%</div><div class="l" data-i="progress">Progreso</div></div>
+      <div class="dstat"><div class="n" id="dd-notes">0</div><div class="l" data-i="notes">Notas</div></div>
+    </div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="by_app_book">Por libro de la app</span></span></div><div id="by-book"></div></div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="by_bible_book">Por libro bíblico</span></span></div><div id="by-bible"></div></div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="most_visited">Más visitados</span></span></div><div id="most-visited"></div></div>
+    <div class="card"><div class="ct"><span style="display:flex;align-items:center;gap:7px"><span class="dot"></span><span data-i="pending">Aún no leídos</span></span></div><div id="still-unread"></div></div>
+    <button class="btn btn-s" style="width:100%;margin-top:8px" id="btn-reset" data-i="reset_stats">Reiniciar estadísticas</button>
+  </div>
+</main>
+
+<div id="reader">
+  <div class="rcard">
+    <div class="rh">
+      <div>
+        <h2 id="r-title">Pasaje</h2>
+        <div class="sub" id="r-sub">Reina Valera 1909</div>
+      </div>
+      <button class="btn-i" onclick="closeReader()" style="width:32px;height:32px;background:rgba(0,0,0,.3)">✕</button>
+    </div>
+    <div class="rb" id="r-body"></div>
+    <div class="rf">
+      <button class="btn btn-s" onclick="closeReader()" data-i="close">Cerrar</button>
+      <button class="btn btn-p" id="r-copy" data-i="copy">Copiar</button>
+    </div>
+  </div>
+</div>
+
+<button id="fab" onclick="togglePanel()"><span style="font-size:1rem">✦</span><span data-i="guide" style="font-size:.58rem">Guía</span></button>
+<div id="panel">
+  <div class="ph">
+    <h3>✦ <span data-i="guide">Guía</span></h3>
+    <button class="btn-i" style="width:28px;height:28px;background:rgba(0,0,0,.25)" onclick="togglePanel()">✕</button>
+  </div>
+  <div class="pb">
+    <p data-i="guide_text">Tres libros · Historias · Doctrina · Sabiduría. Toca bloque → referencia → lees RV1909. El panel guarda lo leído, visitas y notas en este dispositivo.</p>
+    <p style="margin-top:12px;font-weight:800;color:var(--gold)" data-i="language">Idioma de la interfaz</p>
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="es">ES</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="pt">PT</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
+    <p style="margin-top:8px;font-size:.74rem;color:var(--muted)" data-i="bible_note">El texto bíblico permanece en Reina Valera 1909 (español, dominio público).</p>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const I18N={
+es:{read_passages:'Pasajes leídos',read_cards:'Fichas visitadas',progress:'Progreso',notes:'Notas',most_read:'Más leídos',pending:'Pendientes',how:'Abre ficha → bloque → referencia azul → lees RV1909. Todo se guarda en este dispositivo.',sections:'Secciones',featured:'Destacados',back:'← Volver',passages:'Pasajes RV1909',my_notes:'Mis notas',save_note:'Guardar nota',related:'Relacionados',results:'Resultados',no_results:'Sin coincidencias',dashboard:'Panel de lectura',by_app_book:'Por libro de la app',by_bible_book:'Por libro bíblico',most_visited:'Más visitados',reset_stats:'Reiniciar estadísticas',close:'Cerrar',copy:'Copiar',guide:'Guía',guide_text:'Tres libros · Historias · Doctrina · Sabiduría. Toca bloque → referencia → lees RV1909. El panel guarda lo leído, visitas y notas en este dispositivo.',language:'Idioma de la interfaz',bible_note:'El texto bíblico permanece en Reina Valera 1909 (español, dominio público).',saved:'Nota guardada',copied:'Copiado',reset_ok:'Estadísticas reiniciadas',book1:'Libro I · Historias',book1d:'Personajes y sucesos. Texto RV1909.',book2:'Libro II · Doctrina',book2d:'Cartas y enseñanzas. RV1909.',book3:'Libro III · Sabiduría',book3d:'Salmos, Proverbios, Eclesiastés… RV1909.',search_ph:'Buscar…',note_ph:'Escribe tu nota sobre esta ficha…',empty_top:'Aún no hay lecturas registradas.',empty_pending:'¡Has abierto todas las fichas de este libro!',times:'veces',
+sec_origenes:'Orígenes',sec_patriarcas:'Patriarcas',sec_exodo:'Éxodo',sec_reyes:'Reyes',sec_profetas:'Profetas',sec_vida_jesus:'Vida de Jesús',sec_pasion:'Pasión',sec_iglesia:'Iglesia',
+sec_evangelio:'Evangelio',sec_justificacion:'Justificación',sec_libertad:'Libertad',sec_amor_doc:'Amor',sec_fe_doc:'Fe',sec_vida_cristiana:'Vida cristiana',sec_esperanza:'Esperanza',
+sec_salmos:'Salmos',sec_proverbios:'Proverbios',sec_eclesiastes:'Eclesiastés',sec_cantares:'Cantares',
+tab_i:'I · Historias',tab_ii:'II · Doctrina',tab_iii:'III · Sabiduría'},
+en:{read_passages:'Passages read',read_cards:'Cards visited',progress:'Progress',notes:'Notes',most_read:'Most read',pending:'Still to read',how:'Open card → block → blue reference → read RV1909. Everything is saved on this device.',sections:'Sections',featured:'Featured',back:'← Back',passages:'RV1909 passages',my_notes:'My notes',save_note:'Save note',related:'Related',results:'Results',no_results:'No matches',dashboard:'Reading panel',by_app_book:'By app book',by_bible_book:'By Bible book',most_visited:'Most visited',reset_stats:'Reset statistics',close:'Close',copy:'Copy',guide:'Guide',guide_text:'Three books · Stories · Doctrine · Wisdom. Tap block → reference → read RV1909. Reading, visits and notes are saved on this device.',language:'Interface language',bible_note:'Bible text remains Reina Valera 1909 (Spanish, public domain).',saved:'Note saved',copied:'Copied',reset_ok:'Statistics reset',book1:'Book I · Stories',book1d:'Characters and events. RV1909 text.',book2:'Book II · Doctrine',book2d:'Letters and teaching. RV1909.',book3:'Book III · Wisdom',book3d:'Psalms, Proverbs, Ecclesiastes… RV1909.',search_ph:'Search…',note_ph:'Write your note on this card…',empty_top:'No readings recorded yet.',empty_pending:'You have opened every card in this book!',times:'times',
+sec_origenes:'Origins',sec_patriarcas:'Patriarchs',sec_exodo:'Exodus',sec_reyes:'Kings',sec_profetas:'Prophets',sec_vida_jesus:'Life of Jesus',sec_pasion:'Passion',sec_iglesia:'Church',
+sec_evangelio:'Gospel',sec_justificacion:'Justification',sec_libertad:'Freedom',sec_amor_doc:'Love',sec_fe_doc:'Faith',sec_vida_cristiana:'Christian life',sec_esperanza:'Hope',
+sec_salmos:'Psalms',sec_proverbios:'Proverbs',sec_eclesiastes:'Ecclesiastes',sec_cantares:'Song of Songs',
+tab_i:'I · Stories',tab_ii:'II · Doctrine',tab_iii:'III · Wisdom'},
+pt:{read_passages:'Passagens lidas',read_cards:'Fichas visitadas',progress:'Progresso',notes:'Notas',most_read:'Mais lidos',pending:'Ainda por ler',how:'Abra ficha → bloco → referência azul → leia RV1909. Tudo fica neste dispositivo.',sections:'Seções',featured:'Destaques',back:'← Voltar',passages:'Passagens RV1909',my_notes:'Minhas notas',save_note:'Guardar nota',related:'Relacionados',results:'Resultados',no_results:'Sem coincidências',dashboard:'Painel de leitura',by_app_book:'Por livro do app',by_bible_book:'Por livro bíblico',most_visited:'Mais visitados',reset_stats:'Reiniciar estatísticas',close:'Fechar',copy:'Copiar',guide:'Guia',guide_text:'Três livros · Histórias · Doutrina · Sabedoria. Toque bloco → referência → leia RV1909. Leitura, visitas e notas ficam neste dispositivo.',language:'Idioma da interface',bible_note:'O texto bíblico permanece em Reina Valera 1909 (espanhol, domínio público).',saved:'Nota guardada',copied:'Copiado',reset_ok:'Estatísticas reiniciadas',book1:'Livro I · Histórias',book1d:'Personagens e eventos. Texto RV1909.',book2:'Livro II · Doutrina',book2d:'Cartas e ensinos. RV1909.',book3:'Livro III · Sabedoria',book3d:'Salmos, Provérbios, Eclesiastes… RV1909.',search_ph:'Buscar…',note_ph:'Escreva sua nota sobre esta ficha…',empty_top:'Ainda não há leituras registradas.',empty_pending:'Você abriu todas as fichas deste livro!',times:'vezes',
+sec_origenes:'Origens',sec_patriarcas:'Patriarcas',sec_exodo:'Êxodo',sec_reyes:'Reis',sec_profetas:'Profetas',sec_vida_jesus:'Vida de Jesus',sec_pasion:'Paixão',sec_iglesia:'Igreja',
+sec_evangelio:'Evangelho',sec_justificacion:'Justificação',sec_libertad:'Liberdade',sec_amor_doc:'Amor',sec_fe_doc:'Fé',sec_vida_cristiana:'Vida cristã',sec_esperanza:'Esperança',
+sec_salmos:'Salmos',sec_proverbios:'Provérbios',sec_eclesiastes:'Eclesiastes',sec_cantares:'Cânticos',
+tab_i:'I · Histórias',tab_ii:'II · Doutrina',tab_iii:'III · Sabedoria'},
+fr:{read_passages:'Passages lus',read_cards:'Fiches visitées',progress:'Progrès',notes:'Notes',most_read:'Plus lus',pending:'Encore à lire',how:'Ouvrez fiche → bloc → référence bleue → lisez RV1909. Tout est enregistré sur cet appareil.',sections:'Sections',featured:'À la une',back:'← Retour',passages:'Passages RV1909',my_notes:'Mes notes',save_note:'Enregistrer',related:'Liés',results:'Résultats',no_results:'Aucune correspondance',dashboard:'Tableau de lecture',by_app_book:'Par livre de l’app',by_bible_book:'Par livre biblique',most_visited:'Plus visités',reset_stats:'Réinitialiser les stats',close:'Fermer',copy:'Copier',guide:'Guide',guide_text:'Trois livres · Histoires · Doctrine · Sagesse. Touchez bloc → référence → lisez RV1909. Lecture, visites et notes sont enregistrées sur cet appareil.',language:'Langue de l’interface',bible_note:'Le texte biblique reste en Reina Valera 1909 (espagnol, domaine public).',saved:'Note enregistrée',copied:'Copié',reset_ok:'Statistiques réinitialisées',book1:'Livre I · Histoires',book1d:'Personnages et événements. Texte RV1909.',book2:'Livre II · Doctrine',book2d:'Lettres et enseignement. RV1909.',book3:'Livre III · Sagesse',book3d:'Psaumes, Proverbes, Ecclésiaste… RV1909.',search_ph:'Rechercher…',note_ph:'Écrivez votre note sur cette fiche…',empty_top:'Aucune lecture enregistrée.',empty_pending:'Vous avez ouvert toutes les fiches de ce livre !',times:'fois',
+sec_origenes:'Origines',sec_patriarcas:'Patriarches',sec_exodo:'Exode',sec_reyes:'Rois',sec_profetas:'Prophètes',sec_vida_jesus:'Vie de Jésus',sec_pasion:'Passion',sec_iglesia:'Église',
+sec_evangelio:'Évangile',sec_justificacion:'Justification',sec_libertad:'Liberté',sec_amor_doc:'Amour',sec_fe_doc:'Foi',sec_vida_cristiana:'Vie chrétienne',sec_esperanza:'Espérance',
+sec_salmos:'Psaumes',sec_proverbios:'Proverbes',sec_eclesiastes:'Ecclésiaste',sec_cantares:'Cantique',
+tab_i:'I · Histoires',tab_ii:'II · Doctrine',tab_iii:'III · Sagesse'}
+};
+let lang='es';
+function t(k){return (I18N[lang]&&I18N[lang][k])||I18N.es[k]||k;}
+function applyI18n(){
+  document.querySelectorAll('[data-i]').forEach(el=>{const k=el.getAttribute('data-i');if(k)el.textContent=t(k);});
+  const q=document.getElementById('q');if(q)q.placeholder=t('search_ph');
+  const na=document.getElementById('note-area');if(na)na.placeholder=t('note_ph');
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+  document.documentElement.lang=lang;
+  updateHero();
+  renderTabs();
+}
+
+const RV={"1:1:1":"En el principio creó Dios los cielos y la tierra.","1:1:2":"Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo, y el Espíritu de Dios se movía sobre la faz de las aguas.","1:1:3":"Y dijo Dios: Sea la luz: y fué la luz.","1:1:26":"Y dijo Dios: Hagamos al hombre á nuestra imagen, conforme á nuestra semejanza; y señoree en los peces de la mar, y en las aves de los cielos, y en las bestias, y en toda la tierra, y en todo animal que anda arrastrando sobre la tierra.","1:1:27":"Y crió Dios al hombre á su imagen, á imagen de Dios lo crió; varón y hembra los crió.","1:2:7":"Formó, pues, Jehová Dios al hombre del polvo de la tierra, y sopló en su nariz aliento de vida; y fué el hombre en alma viviente.","1:2:21":"E hizo caer Jehová Dios sueño pesado sobre el hombre, y se quedó dormido: entonces tomó una de sus costillas, y cerró la carne en su lugar;","1:2:22":"Y de la costilla que Jehová Dios tomó del hombre, hizo una mujer, y trájola al hombre.","1:2:23":"Y dijo el hombre: Esto es ahora hueso de mis huesos, y carne de mi carne: ésta será llamada Varona, porque del varón fué tomada.","1:3:1":"Empero la serpiente era astuta, más que todos los animales del campo que Jehová Dios había hecho; la cual dijo á la mujer: ¿Conque Dios os ha dicho: No comáis de todo árbol del huerto?","1:3:6":"Y vió la mujer que el árbol era bueno para comer, y que era agradable á los ojos, y árbol codicioso para alcanzar la sabiduría; y tomó de su fruto, y comió; y dió también á su marido, el cual comió así como ella.","1:3:15":"Y enemistad pondré entre ti y la mujer, y entre tu simiente y la suya; ésta te herirá en la cabeza, y tú le herirás en el calcañar.","1:4:4":"Y Abel trajo también de los primogenitos de sus ovejas, y de su grosura. Y miró Jehová á Abel y á su ofrenda;","1:4:8":"Y habló Caín á su hermano Abel: y aconteció que estando ellos en el campo, Caín se levantó contra su hermano Abel, y le mató.","1:6:8":"Empero Noé halló gracia en los ojos de Jehová.","1:6:9":"Estas son las generaciones de Noé: Noé, varón justo, perfecto fué en sus generaciones; con Dios caminó Noé.","1:12:1":"EMPERO Jehová había dicho á Abram: Vete de tu tierra y de tu naturaleza, y de la casa de tu padre, á la tierra que te mostraré;","1:12:2":"Y haré de ti una nación grande, y bendecirte he, y engrandeceré tu nombre, y serás bendición:","1:12:3":"Y bendeciré á los que te bendijeren, y á los que te maldijeren maldeciré: y serán benditas en ti todas las familias de la tierra.","1:15:6":"Y creyó á Jehová, y contóselo por justicia.","1:22:2":"Y dijo: Toma ahora tu hijo, tu único, Isaac, á quien amas, y vete á tierra de Moriah, y ofrécelo allí en holocausto sobre uno de los montes que yo te diré.","2:3:14":"Y respondió Dios á Moisés: YO SOY EL QUE SOY. Y dijo: Así dirás á los hijos de Israel: YO SOY me ha enviado á vosotros.","2:12:13":"Y la sangre os será por señal en las casas donde vosotros estéis; y veré la sangre, y pasaré de vosotros, y no habrá en vosotros plaga de mortandad, cuando heriré la tierra de Egipto.","2:14:21":"Y extendió Moisés su mano sobre la mar, é hizo Jehová que la mar se retirase por recio viento oriental toda aquella noche; y volvió la mar en seco, y las aguas quedaron divididas.","2:20:1":"Y habló Dios todas estas palabras, diciendo:","2:20:2":"Yo soy Jehová tu Dios, que te saqué de la tierra de Egipto, de casa de siervos.","2:20:3":"No tendrás dioses ajenos delante de mí.","6:24:15":"Y si mal os parece servir á Jehová, escogeos hoy á quién sirváis; … que yo y mi casa serviremos á Jehová.","8:1:16":"Y Ruth respondió: No me ruegues que te deje, y me aparte de ti: porque donde quiera que tú fueres, iré yo; y donde quiera que vivieres, viviré. Tu pueblo será mi pueblo, y tu Dios mi Dios.","9:16:7":"Y Jehová respondió á Samuel: No mires á su parecer, ni á la altura de su estatura, porque yo lo desecho; porque Jehová no mira lo que el hombre mira; pues el hombre mira lo que está delante de sus ojos, mas Jehová mira el corazón.","9:17:45":"Entonces dijo David al Filisteo: Tú vienes á mí con espada y lanza y escudo: mas yo vengo á ti en el nombre de Jehová de los ejércitos, el Dios de los escuadrones de Israel, á quien tú has provocado.","10:7:16":"Y será afirmada tu casa y tu reino para siempre delante de tu rostro; y tu trono será estable eternalmente.","11:18:21":"Y llegándose Elías á todo el pueblo, dijo: ¿Hasta cuándo claudicaréis vosotros entre dos pensamientos? Si Jehová es Dios, seguidle; y si Baal, id en pos de él. Y el pueblo no respondió palabra.","12:2:11":"Y aconteció que, yendo ellos hablando, he aquí un carro de fuego con caballos de fuego apartó á los dos: y Elías subió al cielo en un torbellino.","23:7:14":"Por tanto el mismo Señor os dará señal: He aquí que la virgen concebirá, y parirá hijo, y llamará su nombre Emmanuel.","23:9:6":"Porque un niño nos es nacido, hijo nos es dado, y el principado sobre su hombro: y llamaráse su nombre Admirable, Consejero, Dios fuerte, Padre eterno, Príncipe de paz.","23:53:5":"Mas él herido fué por nuestras rebeliones, molido por nuestros pecados: el castigo de nuestra paz sobre él; y por su llaga fuimos nosotros curados.","23:53:6":"Todos nosotros nos descarriamos como ovejas; cada cual se apartó por su camino: mas Jehová cargó en él el pecado de todos nosotros.","24:31:33":"Mas este es el pacto que haré con la casa de Israel después de aquellos días, dice Jehová: Daré mi ley en sus entrañas, y escribiréla en su corazón; y seré yo á ellos por Dios, y ellos me serán por pueblo.","27:6:22":"Y Daniel respondió al rey: Oh rey, para siempre vive.","27:6:23":"Mi Dios envió su ángel, el cual cerró la boca de los leones, para que no me hiciesen mal: porque delante de él se halló en mí justicia: y aun delante de ti, oh rey, yo no he hecho más.","40:5:3":"Bienaventurados los pobres en espíritu: porque de ellos es el reino de los cielos.","40:5:4":"Bienaventurados los que lloran: porque ellos recibirán consolación.","40:5:5":"Bienaventurados los mansos: porque ellos recibirán la tierra por heredad.","40:5:6":"Bienaventurados los que tienen hambre y sed de justicia: porque ellos serán hartos.","40:5:7":"Bienaventurados los misericordiosos: porque ellos alcanzarán misericordia.","40:5:8":"Bienaventurados los de limpio corazón: porque ellos verán á Dios.","40:5:9":"Bienaventurados los pacificadores: porque ellos serán llamados hijos de Dios.","40:6:9":"Vosotros pues oraréis así: Padre nuestro que estás en los cielos, sea santificado tu nombre.","40:6:10":"Venga tu reino. Sea hecha tu voluntad, como en el cielo, así también en la tierra.","40:6:11":"Danos hoy nuestro pan cotidiano.","40:6:12":"Y perdónanos nuestras deudas, como también nosotros perdonamos á nuestros deudores.","40:6:13":"Y no nos metas en tentación, mas líbranos del mal: porque tuyo es el reino, y el poder, y la gloria, por todos los siglos. Amén.","40:11:28":"Venid á mí todos los que estáis trabajados y cargados, que yo os haré descansar.","40:11:29":"Llevad mi yugo sobre vosotros, y aprended de mí, que soy manso y humilde de corazón; y hallaréis descanso para vuestras almas;","40:11:30":"Porque mi yugo es fácil, y ligera mi carga.","40:16:16":"Entonces respondiendo Simón Pedro, dijo: Tú eres el Cristo, el Hijo del Dios viviente.","40:22:37":"Y Jesús le dijo: Amarás al Señor tu Dios de todo tu corazón, y de toda tu alma, y de toda tu mente.","40:22:39":"Y el segundo es semejante á éste: Amarás á tu prójimo como á ti mismo.","40:28:18":"Y llegando Jesús, les habló, diciendo: Toda potestad me es dada en el cielo y en la tierra.","40:28:19":"Por tanto, id, y doctrinad á todos los Gentiles, bautizándolos en el nombre del Padre, y del Hijo, y del Espíritu Santo:","40:28:20":"Enseñándoles que guarden todas las cosas que os he mandado: y he aquí, yo estoy con vosotros todos los días, hasta el fin del mundo. Amén.","42:2:10":"Mas el ángel les dijo: No temáis; porque he aquí os doy nuevas de grande gozo, que será para todo el pueblo:","42:2:11":"Que os ha nacido hoy, en la ciudad de David, un Salvador, que es CRISTO el Señor.","43:1:1":"EN el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios.","43:1:14":"Y aquel Verbo fué hecho carne, y habitó entre nosotros (y vimos su gloria, gloria como del unigénito del Padre), lleno de gracia y de verdad.","43:3:16":"Porque de tal manera amó Dios al mundo, que ha dado á su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.","43:3:17":"Porque no envió Dios á su Hijo al mundo, para que condene al mundo, mas para que el mundo sea salvo por él.","43:8:12":"Y hablóles Jesús otra vez, diciendo: Yo soy la luz del mundo: el que me sigue, no andará en tinieblas, mas tendrá la lumbre de la vida.","43:11:25":"Dícele Jesús: Yo soy la resurrección y la vida: el que cree en mí, aunque esté muerto, vivirá.","43:11:26":"Y todo aquel que vive y cree en mí, no morirá eternamente. ¿Crees esto?","43:14:6":"Jesús le dice: Yo soy el camino, y la verdad, y la vida: nadie viene al Padre, sino por mí.","43:15:5":"Yo soy la vid, vosotros los pámpanos: el que está en mí, y yo en él, éste lleva mucho fruto; porque sin mí nada podéis hacer.","43:15:13":"Nadie tiene mayor amor que este, que ponga alguno su vida por sus amigos.","43:19:30":"Cuando tomó Jesús el vinagre, dijo: Consumado es. Y habiendo inclinado la cabeza, dió el espíritu.","44:1:8":"Mas recibiréis la virtud del Espíritu Santo que vendrá sobre vosotros; y me seréis testigos en Jerusalem, en toda Judea, y Samaria, y hasta lo último de la tierra.","44:2:1":"Y COMO se cumplieron los días de Pentecostés, estaban todos unánimes juntos;","44:2:2":"Y de repente vino un estruendo del cielo como de un viento recio que corría, el cual hinchió toda la casa donde estaban sentados;","44:2:4":"Y fueron todos llenos del Espíritu Santo, y comenzaron á hablar en otras lenguas, como el Espíritu les daba que hablasen.","44:4:12":"Y en ningún otro hay salud; porque no hay otro nombre debajo del cielo, dado á los hombres, en que podamos ser salvos.","45:1:16":"Porque no me avergüenzo del evangelio: porque es potencia de Dios para salud á todo aquel que cree; al Judío primeramente y también al Griego.","45:1:17":"Porque en él la justicia de Dios se descubre de fe en fe; como está escrito: Mas el justo vivirá por la fe.","45:3:23":"Porque todos pecaron, y están destituídos de la gloria de Dios;","45:3:24":"Siendo justificados gratis por su gracia, mediante la redención que es en Cristo Jesús;","45:5:1":"JUSTIFICADOS pues por la fe, tenemos paz para con Dios por medio de nuestro Señor Jesucristo:","45:5:8":"Mas Dios encarece su caridad para con nosotros, porque siendo aún pecadores, Cristo murió por nosotros.","45:6:23":"Porque la paga del pecado es muerte: mas la gracia de Dios es vida eterna en Cristo Jesús Señor nuestro.","45:8:1":"AHORA, pues, ninguna condenación hay para los que están en Cristo Jesús, los que no andan conforme á la carne, mas conforme al espíritu.","45:8:28":"Y sabemos que á los que á Dios aman, todas las cosas les ayudan á bien, es á saber, á los que conforme al propósito son llamados.","45:8:38":"Por lo cual estoy cierto que ni la muerte, ni la vida, ni ángeles, ni principados, ni potestades, ni lo presente, ni lo por venir,","45:8:39":"Ni lo alto, ni lo bajo, ni ninguna criatura podrá separarnos del amor de Dios, que es en Cristo Jesús Señor nuestro.","45:10:9":"Que si confesares con tu boca al Señor Jesús, y creyeres en tu corazón que Dios le levantó de los muertos, serás salvo.","45:10:10":"Porque con el corazón se cree para justicia, mas con la boca se confiesa para salud.","45:12:1":"ASI que, hermanos, os ruego por las misericordias de Dios, que presentéis vuestros cuerpos en sacrificio vivo, santo, agradable á Dios, que es vuestro racional culto.","45:12:2":"Y no os conforméis á este siglo; mas reformaos por la renovación de vuestro entendimiento, para que experimentéis cuál sea la buena voluntad de Dios, agradable y perfecta.","46:13:4":"El amor es sufrido, es benigno; el amor no tiene envidia, el amor no hace sinrazón, no se ensancha;","46:13:5":"No es injurioso, no busca lo suyo, no se irrita, no piensa mal;","46:13:6":"No se huelga de la injusticia, mas se huelga de la verdad;","46:13:7":"Todo lo sufre, todo lo cree, todo lo espera, todo lo soporta.","46:13:8":"El amor nunca se acaba: mas las profecías se han de acabar, y cesarán las lenguas, y la ciencia ha de acabar;","46:13:13":"Y ahora permanecen la fe, la esperanza, y la caridad, estas tres: empero la mayor de ellas es la caridad.","46:15:3":"Porque primeramente os he enseñado lo que asimismo recibí: Que Cristo fué muerto por nuestros pecados, conforme á las Escrituras;","46:15:4":"Y que fué sepultado, y que resucitó al tercer día, conforme á las Escrituras;","47:5:17":"De manera que las que están en Cristo, nuevas criaturas son; las cosas viejas pasaron; he aquí todas son hechas nuevas.","48:2:20":"Con Cristo estoy juntamente crucificado, y vivo, no ya yo, mas vive Cristo en mí: y la vida que ahora vivo en la carne, la vivo en la fe del Hijo de Dios, el cual me amó, y se entregó á sí mismo por mí.","48:5:1":"ESTAD, pues, firmes en la libertad con que Cristo nos hizo libres, y no volváis otra vez á ser presos en el yugo de servidumbre.","48:5:22":"Mas el fruto del Espíritu es: caridad, gozo, paz, tolerancia, benignidad, bondad, fe,","48:5:23":"Mansedumbre, templanza: contra tales cosas no hay ley.","49:2:8":"Porque por gracia sois salvos por la fe; y esto no de vosotros, pues es don de Dios:","49:2:9":"No por obras, para que nadie se gloríe.","49:2:10":"Porque somos hechura suya, criados en Cristo Jesús para buenas obras, las cuales Dios preparó para que anduviésemos en ellas.","49:6:10":"Por lo demás, hermanos míos, fortaleceos en el Señor, y en la potencia de su fortaleza.","49:6:11":"Vestíos de toda la armadura de Dios, para que podáis estar firmes contra las asechanzas del diablo.","50:4:6":"Por nada os acongojéis; sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con hacimiento de gracias.","50:4:7":"Y la paz de Dios, que sobrepuja todo entendimiento, guardará vuestros corazones y vuestros entendimientos en Cristo Jesús.","55:3:16":"Toda Escritura es inspirada divinamente y útil para enseñar, para redargüir, para corregir, para instituir en justicia,","55:3:17":"Para que el hombre de Dios sea perfecto, enteramente instruído para toda buena obra.","58:4:12":"Porque la palabra de Dios es viva y eficaz, y más penetrante que toda espada de dos filos: y que alcanza á partir el alma, y el espíritu, y las coyunturas y los tuétanos, y discierne los pensamientos y las intenciones del corazón.","58:11:1":"ES pues la fe la sustancia de las cosas que se esperan, la demostración de las cosas que no se ven.","58:12:1":"POR tanto nosotros también, teniendo en derredor nuestro tan grande nube de testigos, dejando todo el peso del pecado que nos rodea, corramos con paciencia la carrera que nos es propuesta,","58:12:2":"Puestos los ojos en el autor y consumador de la fe, en Jesús; el cual, habiéndole sido propuesto gozo, sufrió la cruz, menospreciando la vergüenza, y sentóse á la diestra del trono de Dios.","59:1:2":"Hermanos míos, tened por sumo gozo cuando os hallaréis en diversas tentaciones:","59:1:3":"Sabiendo que la prueba de vuestra fe obra paciencia.","59:2:17":"Así también la fe, si no tuviere obras, es muerta en sí misma.","60:1:3":"Bendito el Dios y Padre de nuestro Señor Jesucristo, que según su grande misericordia nos ha regenerado en esperanza viva, por la resurrección de Jesucristo de los muertos,","60:5:7":"Echando toda vuestra solicitud en él, porque él tiene cuidado de vosotros.","62:1:9":"Si confesamos nuestros pecados, él es fiel y justo para que nos perdone nuestros pecados, y nos limpie de toda maldad.","62:4:7":"Amados, amémonos unos á otros: porque el amor es de Dios. Y todo aquel que ama, es nacido de Dios, y conoce á Dios.","62:4:8":"El que no ama, no conoce á Dios; porque Dios es amor.","62:4:19":"Nosotros le amamos á él, porque él nos amó primero.","66:1:8":"Yo soy el Alpha y la Omega, principio y fin, dice el Señor, que es y que era y que ha de venir, el Todopoderoso.","66:3:20":"He aquí, yo estoy á la puerta y llamo: si alguno oyere mi voz y abriere la puerta, entraré á él, y cenaré con él, y él conmigo.","66:21:1":"Y VI un cielo nuevo, y una tierra nueva: porque el primer cielo y la primera tierra se fueron, y el mar ya no es.","66:21:4":"Y limpiará Dios toda lágrima de los ojos de ellos; y no habrá más muerte, ni clamor, ni trabajo; porque las primeras cosas son pasadas.","66:22:20":"El que da testimonio de estas cosas, dice: Ciertamente, vengo en breve. Amén, sea así. Ven: Señor Jesús.","19:1:1":"BIENAVENTURADO el varón que no anduvo en consejo de malos, ni estuvo en camino de pecadores, ni se sentó en silla de escarnecedores;","19:1:2":"Antes en la ley de Jehová está su contentamiento, y en su ley medita de día y de noche.","19:23:1":"Jehová es mi pastor; nada me faltará.","19:23:2":"En lugares de delicados pastos me hará yacer: junto á aguas de reposo me pastoreará.","19:23:3":"Confortará mi alma; guiaráme por sendas de justicia por amor de su nombre.","19:23:4":"Aunque ande en valle de sombra de muerte, no temeré mal alguno; porque tú estarás conmigo: tu vara y tu cayado me infundirán aliento.","19:23:5":"Aderezarás mesa delante de mí en presencia de mis angustiadores: unges mi cabeza con aceite: mi copa está rebosando.","19:23:6":"Ciertamente el bien y la misericordia me seguirán todos los días de mi vida: y en la casa de Jehová moraré por largos días.","19:46:1":"DIOS es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.","19:46:10":"Estad quietos, y conoced que yo soy Dios: seré exaltado entre las gentes; ensalzado seré en la tierra.","19:51:10":"Crea en mí, oh Dios, un corazón limpio, y renueva un espíritu recto dentro de mí.","19:103:1":"BENDICE, alma mía, á Jehová; y bendigan todas mis entrañas su santo nombre.","19:119:105":"Lámpara es á mis pies tu palabra, y lumbrera á mi camino.","19:139:14":"Te alabaré; porque formidables, maravillosas son tus obras: estoy maravillado, y mi alma lo conoce bien.","20:1:7":"El principio de la sabiduría es el temor de Jehová: los insensatos desprecian la sabiduría y la enseñanza.","20:3:5":"Confía en Jehová de todo tu corazón, y no te apoyes en tu prudencia.","20:3:6":"Reconócelo en todos tus caminos, y él enderezará tus veredas.","20:9:10":"El temor de Jehová es el principio de la sabiduría: y el conocimiento del santísimo es la inteligencia.","20:16:3":"Encomienda á Jehová tus obras, y tus pensamientos serán ordenados.","20:16:9":"El corazón del hombre piensa su camino: mas Jehová endereza sus pasos.","20:22:6":"Instruye al niño en su carrera: aun cuando fuere viejo no se apartará de ella.","20:27:1":"No te jactes del día de mañana; porque no sabes qué dará de sí el día.","21:3:1":"PARA todo hay sazón, y todo lo que se quiere debajo del cielo tiene su tiempo:","21:3:11":"Todo lo hizo hermoso en su tiempo: y el mundo ha puesto en el corazón de ellos, sin que el hombre pueda alcanzar la obra que Dios ha hecho desde el principio hasta el cabo.","21:12:13":"El fin de la palabra toda oída es este: Teme á Dios, y guarda sus mandamientos; porque esto es el todo del hombre.","21:12:14":"Porque Dios traerá toda obra á juicio; el cual se hará sobre toda cosa oculta, buena ó mala.","22:8:6":"Ponme como un sello sobre tu corazón, como una marca sobre tu brazo: porque fuerte es como la muerte el amor; duro como el sepulcro el celo: sus brasas, brasas de fuego, fuerte llama.","22:8:7":"Las muchas aguas no podrán apagar el amor, ni lo anegarán los ríos. Si diese el hombre toda la hacienda de su casa por este amor, de cierto lo menospreciarán."};
+
+const LIBROS={1:'Génesis',2:'Éxodo',6:'Josué',8:'Rut',9:'1 Samuel',10:'2 Samuel',11:'1 Reyes',12:'2 Reyes',19:'Salmos',20:'Proverbios',21:'Eclesiastés',22:'Cantares',23:'Isaías',24:'Jeremías',27:'Daniel',40:'Mateo',42:'Lucas',43:'Juan',44:'Hechos',45:'Romanos',46:'1 Corintios',47:'2 Corintios',48:'Gálatas',49:'Efesios',50:'Filipenses',55:'2 Timoteo',58:'Hebreos',59:'Santiago',60:'1 Pedro',62:'1 Juan',66:'Apocalipsis'};
+function refLabel(ref){const p=ref.split(':');if(p.length<3)return ref;return(LIBROS[+p[0]]||('Libro '+p[0]))+' '+p[1]+':'+p.slice(2).join(':');}
+function getVerses(ref){const p=ref.split(':');if(p.length<3)return[];const book=p[0],chap=p[1],vsPart=p.slice(2).join(':');const out=[];vsPart.split(',').forEach(seg=>{seg=seg.trim();if(seg.includes('-')){const[a,b]=seg.split('-').map(x=>parseInt(x,10));if(!isNaN(a)&&!isNaN(b))for(let v=a;v<=b&&v<a+40;v++){const k=book+':'+chap+':'+v;if(RV[k])out.push({k,v,t:RV[k]});}}else{const v=parseInt(seg,10);const k=book+':'+chap+':'+v;if(RV[k])out.push({k,v,t:RV[k]});else if(!isNaN(v))out.push({k,v,t:null});}});return out;}
+
+const SEC_KEYS={origenes:'sec_origenes',patriarcas:'sec_patriarcas',exodo:'sec_exodo',reyes:'sec_reyes',profetas:'sec_profetas','vida-jesus':'sec_vida_jesus',pasion:'sec_pasion',iglesia:'sec_iglesia',evangelio:'sec_evangelio',justificacion:'sec_justificacion',libertad:'sec_libertad','amor-doc':'sec_amor_doc','fe-doc':'sec_fe_doc','vida-cristiana':'sec_vida_cristiana',esperanza:'sec_esperanza','salmos-sel':'sec_salmos','proverbios-sel':'sec_proverbios','eclesiastes-sel':'sec_eclesiastes','cantares-sel':'sec_cantares'};
+const SECTIONS={1:[{id:'origenes'},{id:'patriarcas'},{id:'exodo'},{id:'reyes'},{id:'profetas'},{id:'vida-jesus'},{id:'pasion'},{id:'iglesia'}],2:[{id:'evangelio'},{id:'justificacion'},{id:'libertad'},{id:'amor-doc'},{id:'fe-doc'},{id:'vida-cristiana'},{id:'esperanza'}],3:[{id:'salmos-sel'},{id:'proverbios-sel'},{id:'eclesiastes-sel'},{id:'cantares-sel'}]};
+function secName(id){return t(SEC_KEYS[id]||id);}
+
+const CAT=[
+{id:'creacion',n:'La creación',k:'suceso',e:'origenes',b:1,r:'Cielos, tierra y el hombre.',bl:[['Principio',['1:1:1','1:1:2','1:1:3']],['Imagen de Dios',['1:1:26','1:1:27']],['Del polvo',['1:2:7']]],rel:['adan','eva']},
+{id:'adan',n:'Adán',k:'personaje',e:'origenes',b:1,r:'Formado del polvo.',bl:[['Del polvo',['1:2:7']],['La costilla',['1:2:21','1:2:22','1:2:23']]],rel:['eva','caida']},
+{id:'eva',n:'Eva',k:'personaje',e:'origenes',b:1,r:'Ayuda idónea.',bl:[['Formada',['1:2:21','1:2:22','1:2:23']],['La serpiente',['1:3:1']],['El fruto',['1:3:6']]],rel:['adan','caida']},
+{id:'caida',n:'La caída',k:'suceso',e:'origenes',b:1,r:'La primera promesa.',bl:[['Tentación',['1:3:1','1:3:6']],['La simiente',['1:3:15']]],rel:['adan','eva']},
+{id:'cain-abel',n:'Caín y Abel',k:'suceso',e:'origenes',b:1,r:'Dos ofrendas.',bl:[['Abel',['1:4:4']],['El homicidio',['1:4:8']]],rel:['caida']},
+{id:'noe',n:'Noé',k:'personaje',e:'origenes',b:1,r:'Halló gracia.',bl:[['Gracia',['1:6:8','1:6:9']]],rel:[]},
+{id:'abraham',n:'Abraham',k:'personaje',e:'patriarcas',b:1,r:'Fe contada por justicia.',bl:[['El llamado',['1:12:1','1:12:2','1:12:3']],['Creyó',['1:15:6']],['Moriah',['1:22:2']]],rel:['jesus']},
+{id:'moises',n:'Moisés',k:'personaje',e:'exodo',b:1,r:'YO SOY, Pascua, mar, ley.',bl:[['YO SOY',['2:3:14']],['Pascua',['2:12:13']],['El mar',['2:14:21']],['Mandamientos',['2:20:1','2:20:2','2:20:3']]],rel:['pascua']},
+{id:'pascua',n:'La Pascua',k:'suceso',e:'exodo',b:1,r:'La sangre como señal.',bl:[['La sangre',['2:12:13']]],rel:['moises','cruz']},
+{id:'josue',n:'Josué',k:'personaje',e:'exodo',b:1,r:'Yo y mi casa.',bl:[['La decisión',['6:24:15']]],rel:[]},
+{id:'rut',n:'Rut',k:'personaje',e:'reyes',b:1,r:'Tu pueblo, mi pueblo.',bl:[['La decisión',['8:1:16']]],rel:['david']},
+{id:'david',n:'David',k:'personaje',e:'reyes',b:1,r:'Según el corazón de Dios.',bl:[['El corazón',['9:16:7']],['En el nombre',['9:17:45']],['Trono eterno',['10:7:16']]],rel:['jesus']},
+{id:'elias',n:'Elías',k:'personaje',e:'reyes',b:1,r:'Carmelo y carro de fuego.',bl:[['¿Hasta cuándo?',['11:18:21']],['El carro',['12:2:11']]],rel:[]},
+{id:'isaias-mesias',n:'Isaías · Mesías',k:'suceso',e:'profetas',b:1,r:'Emanuel y el siervo.',bl:[['Emanuel',['23:7:14']],['El niño',['23:9:6']],['Herido',['23:53:5','23:53:6']]],rel:['jesus','cruz']},
+{id:'jeremias-pacto',n:'Pacto nuevo',k:'suceso',e:'profetas',b:1,r:'Ley en el corazón.',bl:[['El pacto',['24:31:33']]],rel:['jesus']},
+{id:'daniel-leones',n:'Daniel',k:'personaje',e:'profetas',b:1,r:'Boca de leones cerrada.',bl:[['El foso',['27:6:22','27:6:23']]],rel:[]},
+{id:'nacimiento',n:'Nacimiento',k:'suceso',e:'vida-jesus',b:1,r:'Os ha nacido un Salvador.',bl:[['Gran gozo',['42:2:10','42:2:11']],['El Verbo',['43:1:1','43:1:14']]],rel:['jesus']},
+{id:'jesus',n:'Jesús',k:'personaje',e:'vida-jesus',b:1,r:'Camino, verdad y vida.',bl:[['Luz',['43:8:12']],['Resurrección',['43:11:25','43:11:26']],['El camino',['43:14:6']],['La vid',['43:15:5']],['Venid a mí',['40:11:28','40:11:29','40:11:30']]],rel:['cruz','resurreccion']},
+{id:'pedro-conf',n:'Pedro confiesa',k:'suceso',e:'vida-jesus',b:1,r:'Tú eres el Cristo.',bl:[['Confesión',['40:16:16']]],rel:['jesus']},
+{id:'cruz',n:'La cruz',k:'suceso',e:'pasion',b:1,r:'Consumado es.',bl:[['Consumado es',['43:19:30']],['Herido por nosotros',['23:53:5','23:53:6']]],rel:['jesus','resurreccion']},
+{id:'resurreccion',n:'Resurrección',k:'suceso',e:'pasion',b:1,r:'Al tercer día.',bl:[['El evangelio',['46:15:3','46:15:4']],['Comisión',['40:28:18','40:28:19','40:28:20']]],rel:['jesus','cruz']},
+{id:'pentecostes',n:'Pentecostés',k:'suceso',e:'iglesia',b:1,r:'Llenos del Espíritu.',bl:[['Pentecostés',['44:2:1','44:2:2','44:2:4']],['Testigos',['44:1:8']],['Ningún otro nombre',['44:4:12']]],rel:['jesus']},
+{id:'pablo',n:'Pablo',k:'personaje',e:'iglesia',b:1,r:'No me avergüenzo del evangelio.',bl:[['El evangelio',['45:1:16','45:1:17']],['Crucificado con Cristo',['48:2:20']]],rel:['evangelio']},
+{id:'evangelio',n:'El evangelio',k:'doctrina',e:'evangelio',b:2,r:'Potencia de Dios para salud.',bl:[['Evangelio',['45:1:16','45:1:17']],['Todos pecaron',['45:3:23','45:3:24']],['Cristo murió',['45:5:8']],['Paga y gracia',['45:6:23']],['Mensaje',['46:15:3','46:15:4']]],rel:['justificacion']},
+{id:'justificacion',n:'Justificación',k:'doctrina',e:'justificacion',b:2,r:'Por la fe, paz con Dios.',bl:[['Justificados',['45:5:1']],['Ninguna condenación',['45:8:1']],['Confesar y creer',['45:10:9','45:10:10']]],rel:['evangelio','libertad']},
+{id:'libertad',n:'Libertad',k:'doctrina',e:'libertad',b:2,r:'Firmes. Nueva criatura.',bl:[['Firmes',['48:5:1']],['Nueva criatura',['47:5:17']],['Fruto del Espíritu',['48:5:22','48:5:23']],['Por gracia',['49:2:8','49:2:9','49:2:10']]],rel:['justificacion']},
+{id:'amor-doc',n:'El amor',k:'doctrina',e:'amor-doc',b:2,r:'Dios es amor.',bl:[['Himno del amor',['46:13:4','46:13:5','46:13:6','46:13:7','46:13:8','46:13:13']],['Dios es amor',['62:4:7','62:4:8','62:4:19']],['Mayor amor',['43:15:13']],['Amarás',['40:22:37','40:22:39']]],rel:[]},
+{id:'fe-doc',n:'Fe y perseverancia',k:'doctrina',e:'fe-doc',b:2,r:'La sustancia de lo que se espera.',bl:[['La fe es',['58:11:1']],['Nube de testigos',['58:12:1','58:12:2']],['Fe y obras',['59:2:17']],['Pruebas',['59:1:2','59:1:3']],['Esperanza viva',['60:1:3']]],rel:[]},
+{id:'vida-cristiana',n:'Vida cristiana',k:'doctrina',e:'vida-cristiana',b:2,r:'Armadura, oración, palabra.',bl:[['Armadura',['49:6:10','49:6:11']],['No os acongojéis',['50:4:6','50:4:7']],['Toda Escritura',['55:3:16','55:3:17']],['Palabra viva',['58:4:12']],['Solicitud',['60:5:7']],['Confesar',['62:1:9']],['Cuerpos',['45:12:1','45:12:2']]],rel:[]},
+{id:'esperanza',n:'Esperanza final',k:'doctrina',e:'esperanza',b:2,r:'Cielo nuevo. Ven, Señor Jesús.',bl:[['Alpha y Omega',['66:1:8']],['A la puerta',['66:3:20']],['Cielo nuevo',['66:21:1','66:21:4']],['Ven Señor',['66:22:20']]],rel:['resurreccion']},
+{id:'salmo1',n:'Salmo 1',k:'sabiduria',e:'salmos-sel',b:3,r:'El justo y la ley.',bl:[['Bienaventurado',['19:1:1','19:1:2']]],rel:[]},
+{id:'salmo23',n:'Salmo 23',k:'sabiduria',e:'salmos-sel',b:3,r:'Jehová es mi pastor.',bl:[['El pastor',['19:23:1','19:23:2','19:23:3','19:23:4','19:23:5','19:23:6']]],rel:[]},
+{id:'salmo46',n:'Salmo 46',k:'sabiduria',e:'salmos-sel',b:3,r:'Amparo y fortaleza.',bl:[['Amparo',['19:46:1','19:46:10']]],rel:[]},
+{id:'salmo51',n:'Salmo 51',k:'sabiduria',e:'salmos-sel',b:3,r:'Corazón limpio.',bl:[['Crea en mí',['19:51:10']]],rel:[]},
+{id:'salmo103',n:'Salmo 103',k:'sabiduria',e:'salmos-sel',b:3,r:'Bendice, alma mía.',bl:[['Bendice',['19:103:1']]],rel:[]},
+{id:'salmo119',n:'Salmo 119',k:'sabiduria',e:'salmos-sel',b:3,r:'Lámpara a mis pies.',bl:[['Lámpara',['19:119:105']]],rel:[]},
+{id:'salmo139',n:'Salmo 139',k:'sabiduria',e:'salmos-sel',b:3,r:'Maravillosas tus obras.',bl:[['Maravillosas',['19:139:14']]],rel:[]},
+{id:'prov-temor',n:'Temor de Jehová',k:'sabiduria',e:'proverbios-sel',b:3,r:'Principio de la sabiduría.',bl:[['Principio',['20:1:7','20:9:10']],['Confía',['20:3:5','20:3:6']]],rel:[]},
+{id:'prov-caminos',n:'Caminos',k:'sabiduria',e:'proverbios-sel',b:3,r:'Jehová endereza.',bl:[['Encomienda',['20:16:3','20:16:9']],['Instruye',['20:22:6']],['Mañana',['20:27:1']]],rel:[]},
+{id:'ecl-tiempo',n:'Tiempo',k:'sabiduria',e:'eclesiastes-sel',b:3,r:'Todo tiene su tiempo.',bl:[['Tiempo',['21:3:1','21:3:11']],['El fin',['21:12:13','21:12:14']]],rel:[]},
+{id:'cantares-amor',n:'Cantares',k:'sabiduria',e:'cantares-sel',b:3,r:'Fuerte como la muerte.',bl:[['El amor',['22:8:6','22:8:7']]],rel:['amor-doc']}
+];
+const byId={};CAT.forEach(c=>byId[c.id]=c);
+
+const SK='biblia_rv1909_v2';
+function loadS(){try{return JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){return{};}}
+function saveS(s){localStorage.setItem(SK,JSON.stringify(s));}
+function ensureS(){let s=loadS();if(!s.reads)s.reads={};if(!s.cards)s.cards={};if(!s.notes)s.notes={};if(!s.lang)s.lang='es';return s;}
+function markRead(ref){const s=ensureS();s.reads[ref]=(s.reads[ref]||0)+1;saveS(s);}
+function markCard(id){const s=ensureS();s.cards[id]=(s.cards[id]||0)+1;saveS(s);}
+function saveNote(id,text){const s=ensureS();if(text.trim())s.notes[id]=text.trim();else delete s.notes[id];saveS(s);}
+function getNote(id){return ensureS().notes[id]||'';}
+
+let book=1,lastEra=null,currentDetail=null;
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);}
+function show(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');window.scrollTo(0,0);}
+
+function updateHero(){
+  document.getElementById('hero-title').textContent=t('book'+book);
+  document.getElementById('hero-desc').textContent=t('book'+book+'d');
+  const tabs=document.querySelectorAll('.book-tab');
+  if(tabs[0])tabs[0].textContent=t('tab_i');
+  if(tabs[1])tabs[1].textContent=t('tab_ii');
+  if(tabs[2])tabs[2].textContent=t('tab_iii');
+}
+
+function setBook(b){
+  book=+b;
+  document.body.classList.remove('theme-2','theme-3');
+  if(book===2)document.body.classList.add('theme-2');
+  if(book===3)document.body.classList.add('theme-3');
+  document.querySelectorAll('.book-tab').forEach(t=>t.classList.toggle('active',+t.dataset.book===book));
+  updateHero();renderTabs();renderHome();show('home');
+}
+
+function renderTabs(){
+  const secs=SECTIONS[book]||[];
+  const el=document.getElementById('tabs');
+  el.innerHTML=`<button class="tab active" data-id="all">⌂</button>`+secs.map(s=>`<button class="tab" data-id="${s.id}">${secName(s.id)}</button>`).join('');
+  el.querySelectorAll('.tab').forEach(btn=>{
+    btn.onclick=()=>{el.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));if(btn.dataset.id==='all'){show('home');renderHome();}else openEra(btn.dataset.id);};
+  });
+}
+
+function cardHTML(c){
+  const s=ensureS();const visits=s.cards[c.id]||0;const read=visits>0;
+  const badge=c.k==='personaje'?'b-p':c.k==='doctrina'?'b-d':c.k==='sabiduria'?'b-w':'b-s';
+  return `<div class="ic ${read?'read':''}" onclick="openDetail('${c.id}')"><div><h3>${c.n}</h3><p>${c.r}</p></div><div class="meta"><span class="badge ${badge}">${c.k}</span>${visits?`<span class="visits">${visits}×</span>`:''}</div></div>`;
+}
+
+function renderDashWidgets(){
+  const s=ensureS();
+  const readRefs=Object.keys(s.reads).length;
+  const cardsVisited=Object.keys(s.cards).length;
+  const pct=CAT.length?Math.round(cardsVisited/CAT.length*100):0;
+  const notesN=Object.keys(s.notes).length;
+  ['ds-read','dd-read'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=readRefs;});
+  ['ds-fichas','dd-fichas'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=cardsVisited;});
+  ['ds-pct','dd-pct'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=pct+'%';});
+  ['ds-notes','dd-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=notesN;});
+  const top=Object.entries(s.reads).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-list').innerHTML=top.length?top.map(([ref,n])=>`<div class="list-item" onclick="openReader('${ref}')"><span>${refLabel(ref)}</span><span class="visits">${n} ${t('times')}</span></div>`).join(''):`<div class="empty">${t('empty_top')}</div>`;
+  const unread=CAT.filter(c=>c.b===book&&!s.cards[c.id]).slice(0,6);
+  document.getElementById('unread-list').innerHTML=unread.length?unread.map(c=>`<div class="list-item" onclick="openDetail('${c.id}')"><span>${c.n}</span><span class="badge b-t">${c.k}</span></div>`).join(''):`<div class="empty">${t('empty_pending')}</div>`;
+}
+
+function renderFullDash(){
+  renderDashWidgets();
+  const s=ensureS();
+  const byB={1:0,2:0,3:0};
+  Object.keys(s.cards).forEach(id=>{const c=byId[id];if(c)byB[c.b]=(byB[c.b]||0)+1;});
+  const maxB=Math.max(1,...Object.values(byB));
+  document.getElementById('by-book').innerHTML=[1,2,3].map(b=>`<div class="bar-row"><span class="lab">${t('tab_'+['i','ii','iii'][b-1]).split('·')[0].trim()}</span><div class="bar"><div class="fill" style="width:${byB[b]/maxB*100}%"></div></div><span class="cnt">${byB[b]}</span></div>`).join('');
+  const byBible={};
+  Object.keys(s.reads).forEach(ref=>{const bk=ref.split(':')[0];const name=LIBROS[+bk]||bk;byBible[name]=(byBible[name]||0)+s.reads[ref];});
+  const sortedB=Object.entries(byBible).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxBb=Math.max(1,...sortedB.map(x=>x[1]),1);
+  document.getElementById('by-bible').innerHTML=sortedB.length?sortedB.map(([n,c])=>`<div class="bar-row"><span class="lab">${n}</span><div class="bar"><div class="fill" style="width:${c/maxBb*100}%"></div></div><span class="cnt">${c}</span></div>`).join(''):`<div class="empty">${t('empty_top')}</div>`;
+  const topC=Object.entries(s.cards).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('most-visited').innerHTML=topC.length?topC.map(([id,n])=>{const c=byId[id];return `<div class="list-item" onclick="openDetail('${id}')"><span>${c?c.n:id}</span><span class="visits">${n} ${t('times')}</span></div>`;}).join(''):`<div class="empty">${t('empty_top')}</div>`;
+  const still=CAT.filter(c=>!s.cards[c.id]).slice(0,12);
+  document.getElementById('still-unread').innerHTML=still.length?still.map(c=>`<div class="list-item" onclick="openDetail('${c.id}')"><span>${c.n}</span><span class="badge b-t">L${c.b}</span></div>`).join(''):`<div class="empty">${t('empty_pending')}</div>`;
+}
+
+function renderHome(){
+  renderDashWidgets();
+  const secs=SECTIONS[book]||[];
+  document.getElementById('g-sec').innerHTML=secs.map(s=>{
+    const n=CAT.filter(c=>c.e===s.id&&c.b===book).length;
+    return `<div class="ic" onclick="openEra('${s.id}')"><div><h3>${secName(s.id)}</h3></div><div class="meta"><span class="badge b-t">${n}</span></div></div>`;
+  }).join('');
+  const destMap={1:['creacion','abraham','moises','david','jesus','cruz','resurreccion','pentecostes'],2:['evangelio','justificacion','amor-doc','libertad','fe-doc','esperanza'],3:['salmo23','prov-temor','ecl-tiempo','cantares-amor']};
+  document.getElementById('g-dest').innerHTML=(destMap[book]||[]).filter(id=>byId[id]).map(id=>cardHTML(byId[id])).join('');
+}
+
+function openEra(id){
+  lastEra=id;
+  document.getElementById('list-title').textContent=secName(id);
+  const items=CAT.filter(c=>c.e===id&&c.b===book);
+  document.getElementById('list-grid').innerHTML=items.length?items.map(cardHTML).join(''):'<div class="empty">—</div>';
+  show('list');
+}
+
+function openDetail(id){
+  const c=byId[id];if(!c)return;
+  currentDetail=id;markCard(id);
+  const s=ensureS();
+  document.getElementById('d-tipo').textContent=c.k;
+  document.getElementById('d-tipo').className='badge '+(c.k==='personaje'?'b-p':c.k==='doctrina'?'b-d':c.k==='sabiduria'?'b-w':'b-s');
+  document.getElementById('d-era').textContent=secName(c.e);
+  document.getElementById('d-read-badge').style.display=(s.cards[id]||0)>0?'inline':'none';
+  document.getElementById('d-nom').textContent=c.n;
+  document.getElementById('d-res').textContent=c.r;
+  document.getElementById('note-area').value=getNote(id);
+  document.getElementById('d-blocks').innerHTML=(c.bl||[]).map((bl,i)=>{
+    const title=bl[0],refs=bl[1]||[];
+    return `<div class="block" id="bl-${i}"><div class="block-h" onclick="toggleBlock(${i})"><h4>${title}</h4><span class="chev">▶</span></div><div class="block-body">${refs.map(r=>{const rd=!!ensureS().reads[r];return `<button type="button" class="ref-btn ${rd?'read':''}" onclick="openReader('${r}')"><span class="lab">${getVerses(r).some(v=>v.t)?'RV1909':refLabel(r)}${rd?' · ✓':''}</span>${refLabel(r)}</button>`;}).join('')}</div></div>`;
+  }).join('');
+  const rel=(c.rel||[]).filter(rid=>byId[rid]);
+  const rw=document.getElementById('d-rel-w');
+  if(rel.length){rw.style.display='block';document.getElementById('d-rel').innerHTML=rel.map(rid=>`<span class="chip" onclick="openDetail('${rid}')">${byId[rid].n}</span>`).join('');}
+  else rw.style.display='none';
+  document.getElementById('d-back').onclick=()=>{if(lastEra)openEra(lastEra);else goHome();};
+  show('detail');
+}
+function toggleBlock(i){const el=document.getElementById('bl-'+i);if(el)el.classList.toggle('open');}
+
+function openReader(ref){
+  markRead(ref);
+  const label=refLabel(ref);
+  const verses=getVerses(ref);
+  document.getElementById('r-title').textContent=label;
+  document.getElementById('r-sub').textContent='Reina Valera 1909';
+  let html='',copyText=label+'\n\n';
+  const has=verses.some(v=>v.t);
+  if(has){
+    verses.forEach(v=>{if(v.t){html+=`<div class="v"><span class="vn">${v.v}</span><span class="txt">${v.t}</span></div>`;copyText+=v.v+' '+v.t+'\n';}});
+    html+=`<div class="src">Reina Valera 1909 · ${label}</div>`;
+  } else {
+    html=`<div class="empty-hint"><strong style="color:var(--gold)">${label}</strong><br><br>Este pasaje está catalogado. Ábrelo en tu Biblia RV1909 completa, o copia la referencia.</div>`;
+    copyText=label;
+  }
+  document.getElementById('r-body').innerHTML=html;
+  document.getElementById('r-copy').onclick=()=>{
+    if(navigator.clipboard)navigator.clipboard.writeText(copyText.trim()).then(()=>toast(t('copied'))).catch(()=>toast(label));
+    else toast(label);
+  };
+  document.getElementById('reader').classList.add('open');
+}
+function closeReader(){document.getElementById('reader').classList.remove('open');}
+document.getElementById('reader').addEventListener('click',e=>{if(e.target.id==='reader')closeReader();});
+document.getElementById('note-save').onclick=()=>{if(!currentDetail)return;saveNote(currentDetail,document.getElementById('note-area').value);toast(t('saved'));};
+
+function goHome(){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.id==='all'));show('home');renderHome();}
+document.querySelectorAll('.book-tab').forEach(b=>b.onclick=()=>setBook(b.dataset.book));
+document.getElementById('btn-home').onclick=goHome;
+document.getElementById('btn-dash').onclick=()=>{renderFullDash();show('dash');};
+document.getElementById('btn-reset').onclick=()=>{if(confirm('Reset?')){localStorage.removeItem(SK);const s=ensureS();s.lang=lang;saveS(s);renderFullDash();toast(t('reset_ok'));}};
+
+document.querySelectorAll('.lang-btn').forEach(b=>{
+  b.onclick=()=>{
+    lang=b.dataset.lang;
+    const s=ensureS();s.lang=lang;saveS(s);
+    applyI18n();
+    renderHome();
+    if(document.getElementById('view-dash').classList.contains('active'))renderFullDash();
+  };
+});
+
+let st;
+document.getElementById('q').addEventListener('input',function(){
+  clearTimeout(st);
+  const q=this.value.trim().toLowerCase();
+  if(!q){goHome();return;}
+  st=setTimeout(()=>{
+    const res=CAT.filter(c=>c.n.toLowerCase().includes(q)||c.r.toLowerCase().includes(q));
+    document.getElementById('sq').textContent=q;
+    document.getElementById('sg').innerHTML=res.map(cardHTML).join('');
+    document.getElementById('se').style.display=res.length?'none':'block';
+    show('search');
+  },150);
+});
+function togglePanel(){document.getElementById('panel').classList.toggle('open');}
+
+(function(){
+  const s=ensureS();
+  lang=s.lang||'es';
+  applyI18n();
+  setBook(1);
+})();
+</script>
+</body>
+</html>
